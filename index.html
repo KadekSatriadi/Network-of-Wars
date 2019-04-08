@@ -1,0 +1,224 @@
+<html>
+    <header>
+        <!-- Required meta tags -->
+    <title>Network of Wars</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <script type="text/javascript" src="js/d3.js"></script>
+    <script type="text/javascript" src="js/d3-zoom.js"></script>
+    <script type="text/javascript" src="js/networkofwars.js"></script>
+
+    <style>
+        h1{
+            font-family: 'Lato', sans-serif;
+            color: white;
+        }
+        .tooltip{
+            color: white;
+        }
+        .form{
+            text-align: center;
+        }
+        .form-wrapper{
+            margin: auto;
+            text-align: left;
+            max-width: 800px
+        }
+        .form-wrapper div, .form-wrapper input{
+            margin: 0 0 10 10;
+        }
+        .content{
+            padding-top: 5px;
+            text-align: center;
+            background-color: rgb(37, 38, 39);
+        }
+        .footer{
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+    </style>
+    </header>
+    <body>
+        <script>
+            var graphdata;
+            var wardatapath = "./data/wardata.csv";
+            var warlocationpath = "./data/warlocationlookup.csv";
+            var convertNumbers = function(row) {
+                var r = {};
+                for (var k in row) {
+                    r[k] = +row[k];
+                    if (isNaN(r[k])) {
+                        r[k] = row[k];
+                    }
+                }
+                return r;
+            }
+
+            d3.csv(wardatapath,convertNumbers, function (data) {
+                var wardata = data;
+                d3.csv(warlocationpath,convertNumbers,function (data) {
+                    var warlocationdata = data;
+
+                    processData();
+                    var graphdata = getGraphData();
+                    WarForcedGraph.containerid = "canvas";
+                    WarForcedGraph.height = 500;
+                    WarForcedGraph.width = 1000;
+                    WarForcedGraph.data = graphdata;
+                    WarForcedGraph.drawSvg();
+                    WarForcedGraph.drawGraphs();
+
+                    function getGraphDataId(nodes, name) {
+                        var id = -1;
+                        for(var i = 0; i < nodes.length; i++){
+                            var node = nodes[i];
+                            if(node.id === name){
+                                id = i;
+                                break;
+                            }
+                        }
+                        return id;
+                    }
+                    function processData() {
+                        w = wardata;
+                        var wararray = [];
+                        for(var i = 0; i < w.length; i++){
+                            var row = w[i];
+                            var participant = {
+                                warid: row.warid,
+                                name: row.statename,
+                                side: row.side,
+                                death: row.death,
+                                initiator: row.initiator,
+                                location: getLocations(row.locationid),
+                                coordinate: [
+                                    row.long, row.lat
+                                ]
+                            }
+                            delete row.statename;
+                            delete row.lat;
+                            delete row.long;
+                            delete row.initiator;
+                            delete row.side;
+                            row.location = [];
+
+                            if(wararray.length == 0){
+                                row.participants = [];
+                                row.location = participant.location;
+                                wararray.push(row);
+                            }else{
+                                wararray =  addWar(wararray,row);
+                            }
+                            wararray = addParticipant(wararray,participant);
+                        }
+
+                        completedata = wararray;
+                    }
+                    function getGraphData() {
+                        var graphdata;
+                        var nodes = [];
+                        var links = [];
+
+                        for(var i = 0; i < completedata.length; i++){
+                            var war = completedata[i];
+                            var warnode = {
+                                id : war.name,
+                                type: "war",
+                                startyear: war.startyear,
+                                endyear : war.endyear,
+                                death: war.death
+                            }
+                            nodes.push(warnode);
+                            var warid = nodes.length - 1;
+
+                            var duration = war.endyear - war.startyear;
+                            for(var j = 0; j < war.participants.length; j++){
+                                var state =  war.participants[j];
+                                var statenode = {
+                                    id : state.name,
+                                    type: "state",
+                                    death: state.death
+                                }
+                                var id = getGraphDataId(nodes,state.name);
+                                if(id === -1){
+                                    nodes.push(statenode);
+                                    id = nodes.length - 1;
+                                }
+                                nodes = updateTotalDeathNode(nodes,state);
+                                links.push({
+                                    source: id, target: warid, value: duration
+                                })
+                            }
+                        }
+                        graphdata = {
+                            nodes : nodes,
+                            links : links
+                        };
+                        return graphdata;
+                    }
+                    function getLocations(id) {
+                        var locations = [];
+                        for(var i =0; i < warlocationdata.length; i++){
+                            var warloc = warlocationdata[i];
+                            if(warloc.id === id){
+                                locations.push(warloc);
+                            }
+                        }
+                        return locations;
+                    }
+                    function addLocation(base,item) {
+                        for(var i=0; i < item.length; i++){
+                            var loc = item[i];
+                            var found = false;
+                            for(var j = 0; j < base.length; j++){
+                                if(base[j].code == loc.code){
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if(!found) base.push(loc);
+                        }
+                        return base;
+                    }
+                    function addParticipant(wararray,participant) {
+                        for(var i = 0; i < wararray.length; i++) {
+                            if(wararray[i].warid == participant.warid){
+                                wararray[i].death = wararray[i].death + participant.death;
+                                wararray[i].location = addLocation(wararray[i].location, participant.location);
+                                wararray[i].participants.push(participant);
+                            }
+                        }
+                        return wararray;
+                    }
+                    function updateTotalDeathNode(nodes, state) {
+                        var id = getGraphDataId(nodes, state.name);
+                        nodes[id].death += state.death;
+                        return nodes;
+                    }
+                    function addWar(wararray,row) {
+                        var found = false;
+                        for(var i = 0; i < wararray.length; i++) {
+                            if(wararray[i].warid == row.warid){
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(!found){
+                            row.participants = [];
+                            row.death = 0;
+                            wararray.push(row);
+                        }
+                        return wararray;
+                    }
+                    //end
+                })
+            })
+        </script>
+        <div class="content">
+            <h1>Network of Wars</h1>
+            <div id="canvas"></div>
+               
+    </body>
+</html>
