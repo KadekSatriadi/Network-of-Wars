@@ -218,8 +218,8 @@ var WarForcedGraph = new function () {
             var content = "<b>"+d.id+"</b>";
 
             if(d.type === "war") {
-                content += " war (" + d.startyear + " - " + d.endyear;
-                content += "<br/>" + addCommas(d.death) + " people";
+                content += " war (" + d.startyear + " - " + d.endyear + ")";
+                content += "<br/>Deaths: " + addCommas(d.death) + " people";
             }
             tip.transition()
                 .duration(200).style("display","block")

@@ -4,16 +4,25 @@
     <title>Network of Wars</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Fjalla+One" rel="stylesheet">
     <script type="text/javascript" src="js/d3.js"></script>
     <script type="text/javascript" src="js/d3-zoom.js"></script>
     <script type="text/javascript" src="js/networkofwars.js"></script>
 
     <style>
-        h1{
-            font-family: 'Lato', sans-serif;
+        a{
+            font-weight: bold;
+        }
+        p, a, li{
             color: white;
+            text-align: left;
+        }
+        h1{
+            font-family: 'Fjalla One', sans-serif;
+            color: white;
+            text-align: left;
+            margin-bottom: 35px;
         }
         .tooltip{
             color: white;
@@ -29,10 +38,20 @@
         .form-wrapper div, .form-wrapper input{
             margin: 0 0 10 10;
         }
-        .content{
-            padding-top: 5px;
+        .footer{
+            font-size: smaller;
             text-align: center;
+            margin: auto;
+        }
+        body{
+
             background-color: rgb(37, 38, 39);
+        }
+        .description{
+            margin-top: 50px;
+            padding: 25px;
+            text-align: center;
+            
         }
         .footer{
             margin-top: 5px;
@@ -41,6 +60,32 @@
     </style>
     </header>
     <body>
+    <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                        <div class="description">
+                                <h1>THE NETWORK OF <b style="color:red">WARS</b></h1>
+                                <div>
+                                        <p>
+                                            The network of wars visualises the connections among nations on the battlefields from 1800s to early 2000s.
+                                            </p>
+                                            <p>
+                                                    Datasets : <a href="http://www.correlatesofwar.org/" target="_blank">Correlate of War</a><br>
+                                                    Visualisation: <a href="https://d3js.org/" target="_blank">d3.js</a> 
+                                            </p>
+                                          
+                                </div>
+        
+                        </div>
+                       
+                </div>
+                <div class="col-md-auto" id="canvas">
+                </div>                      
+            </div>
+            <p class="footer">
+                    Created by: <a href="kadekananta.com">Kadek A. Satriadi</a>, github: <a href="https://github.com/KadekSatriadi/networkofwars" target="_blank">https://github.com/KadekSatriadi/networkofwars</a> 
+                </p>        
+        </div>
         <script>
             var graphdata;
             var wardatapath = "./data/wardata.csv";
@@ -64,8 +109,8 @@
                     processData();
                     var graphdata = getGraphData();
                     WarForcedGraph.containerid = "canvas";
-                    WarForcedGraph.height = 500;
-                    WarForcedGraph.width = 1000;
+                    WarForcedGraph.height = d3.select("body").style('height').slice(0, -2) ;
+                    WarForcedGraph.width = d3.select("body").style('width').slice(0, -2) - 500;
                     WarForcedGraph.data = graphdata;
                     WarForcedGraph.drawSvg();
                     WarForcedGraph.drawGraphs();
@@ -215,10 +260,6 @@
                     //end
                 })
             })
-        </script>
-        <div class="content">
-            <h1>Network of Wars</h1>
-            <div id="canvas"></div>
-               
+        </script>         
     </body>
 </html>
