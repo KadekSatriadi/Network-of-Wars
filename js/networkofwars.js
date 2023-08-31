@@ -41,15 +41,15 @@ var WarForcedGraph = new function () {
         var r = d3.scale.log();
         var force = d3.layout.force()
             .charge(-50)
-            .linkDistance(50)
-            .size([this.width-100, this.height-100]);
+            .linkDistance(100)
+            .size([this.width, this.height]);
 
         this.links = this.svg.selectAll("line")
             .data(this.data.links)
             .enter().append("line")
             .attr("stroke","white")
             .style("stroke-width", function (d) {
-                return r(d.value * 10);
+                return r(d.value * 30);
             });
 
 
@@ -57,11 +57,13 @@ var WarForcedGraph = new function () {
             .attr("class", "tooltip")
             .style("opacity", 0);
 
-        var statedim = 5;
+        
+
+        var statedim = 10;
 
         var getdimension = function (d) {
             if(d.type=="war")
-                return r(d.death*100)*2;
+                return r(d.death*100)*3;
             else
                 return statedim;
         }
@@ -224,9 +226,9 @@ var WarForcedGraph = new function () {
             tip.transition()
                 .duration(200).style("display","block")
                 .style("opacity", 1);
-            tip	.html(content)
-                .style("left", (d3.event.pageX - 30)  + "px")
-                .style("top", (d3.event.pageY - 80) + "px");
+            tip.html(content)
+                .style("left", (d3.event.x - 30)  + "px")
+                .style("top", (d3.event.y - 80) + "px");
         }
         function tick(e) {
             var k = 1 * e.alpha;
